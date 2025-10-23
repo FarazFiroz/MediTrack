@@ -17,6 +17,7 @@
             android:layout_height="25dp"
             android:padding="3dp"
             android:layout_marginLeft="5dp"
+            android:tint="@color/subheading_color"
             android:layout_marginRight="5dp"
             android:src="@drawable/allergy_icon" />
 

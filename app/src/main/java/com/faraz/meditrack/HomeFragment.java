@@ -1,51 +1,45 @@
 package com.faraz.meditrack;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import com.faraz.meditrack.R;
-
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 
-import com.faraz.meditrack.databinding.ActivityHomeBinding;
+import com.faraz.meditrack.databinding.FragmentHomeBinding;
 import com.google.android.material.chip.Chip;
 
 import java.util.HashSet;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeFragment extends Fragment {
 
     private HashSet<String> allergies;
-    private ActivityHomeBinding binding;
+    private FragmentHomeBinding binding;
     private SharedPreferences data;
     private SharedPreferences.Editor editor;
     private String[] genders = {"Male", "Female"};
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = ActivityHomeBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentHomeBinding.inflate(inflater, container, false);
+        View view = binding.getRoot();
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        initViews();
 
-        data = getSharedPreferences("userData", MODE_PRIVATE);
+        return view;
+    }
+
+    private void initViews(){
+        data = getActivity().getSharedPreferences("userData", Context.MODE_PRIVATE);
         editor = data.edit();
         allergies = new HashSet<>(data.getStringSet("allergies", new HashSet<>()));
         loadUserData();
@@ -53,7 +47,7 @@ public class HomeActivity extends AppCompatActivity {
         binding.genderDropdown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PopupMenu popupMenu = new PopupMenu(HomeActivity.this, view);
+                PopupMenu popupMenu = new PopupMenu(getContext(), view);
                 popupMenu.getMenuInflater().inflate(R.menu.gender_menu, popupMenu.getMenu());
                 popupMenu.setOnMenuItemClickListener(item -> {
                     if(item.getItemId() == R.id.male){
@@ -75,7 +69,7 @@ public class HomeActivity extends AppCompatActivity {
         binding.bloodGrpDropdown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PopupMenu popupMenu = new PopupMenu(HomeActivity.this, view);
+                PopupMenu popupMenu = new PopupMenu(getContext(), view);
                 popupMenu.getMenuInflater().inflate(R.menu.bloodgroup_menu, popupMenu.getMenu());
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -99,7 +93,7 @@ public class HomeActivity extends AppCompatActivity {
         binding.updateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new AlertDialog.Builder(HomeActivity.this)
+                new AlertDialog.Builder(getContext())
                         .setTitle("Confirm Action")
                         .setMessage("Are you sure you want to update your data")
                         .setPositiveButton("Yes", (dialog, which) -> {
@@ -120,7 +114,7 @@ public class HomeActivity extends AppCompatActivity {
 
                             String phoneNumber = binding.phoneBox.getText().toString();
                             if(!phoneNumber.isEmpty() && phoneNumber.length() != 10) {
-                                Toast.makeText(HomeActivity.this, "Enter a valid phone number", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "Enter a valid phone number", Toast.LENGTH_SHORT).show();
                                 return;
                             }
                             editor.putString("phoneNumber", !phoneNumber.isEmpty() ? phoneNumber:binding.phoneBox.getHint().toString());
@@ -131,7 +125,7 @@ public class HomeActivity extends AppCompatActivity {
                             loadUserData();
                             clearEditTextFocus();
 
-                            Toast.makeText(HomeActivity.this, "Data updated succesfully", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Data updated succesfully", Toast.LENGTH_SHORT).show();
                         })
                         .setNegativeButton("No", (dialog, which) -> {})
                         .setCancelable(true)
@@ -144,7 +138,7 @@ public class HomeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 View view = getLayoutInflater().inflate(R.layout.edttxt_enter_allergy, null);
                 EditText input = view.findViewById(R.id.allergyBox);
-                new AlertDialog.Builder(HomeActivity.this)
+                new AlertDialog.Builder(getContext())
                         .setTitle("Add allergy")
                         .setView(view)
                         .setPositiveButton("Add", (dialog, which) -> {
@@ -210,10 +204,10 @@ public class HomeActivity extends AppCompatActivity {
 
         binding.allergyChipgroup.removeAllViews();
         for(String s:allergies){
-            Chip chip = new Chip(HomeActivity.this);
+            Chip chip = new Chip(getContext());
             chip.setText(s);
             chip.setChipStrokeWidth(0f); chip.setChipBackgroundColorResource(R.color.background);
-            chip.setTextColor(ContextCompat.getColor(HomeActivity.this, R.color.subheading_color));
+            chip.setTextColor(ContextCompat.getColor(getContext(), R.color.subheading_color));
             int radius = (int) (20 * getResources().getDisplayMetrics().density);
             chip.setChipCornerRadius(radius);
             chip.setCloseIconResource(R.drawable.close);
@@ -223,7 +217,7 @@ public class HomeActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     Chip chip = (Chip) view;
-                    new AlertDialog.Builder(HomeActivity.this)
+                    new AlertDialog.Builder(getContext())
                             .setTitle("Delete Confirmation")
                             .setMessage("Are you sure you want to delete this allergy?")
                             .setPositiveButton("Yes", (dialog, which) -> {
@@ -232,7 +226,7 @@ public class HomeActivity extends AppCompatActivity {
                                 editor.apply();
                                 loadUserData();
 
-                                Toast.makeText(HomeActivity.this, "Allergy deleted succesfully", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "Allergy deleted succesfully", Toast.LENGTH_SHORT).show();
                             })
                             .setNegativeButton("No", (dialog, which) -> {})
                             .setCancelable(true)
@@ -250,5 +244,11 @@ public class HomeActivity extends AppCompatActivity {
         binding.weightBox.clearFocus();
         binding.emailBox.clearFocus();
         binding.phoneBox.clearFocus();
+    }
+
+    @Override
+    public void onDestroyView(){
+        super.onDestroyView();
+        binding = null;
     }
 }
