@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.MediTrack" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Primary colors -->
+        <item name="colorPrimary">#007DBD</item>
+
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="heading_text">
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="subheading_text">
+        <item name="android:textColor">@color/subheading_color</item>
+    </style>
+
+</resources>
