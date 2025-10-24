@@ -73,11 +73,22 @@ public class MainActivity extends AppCompatActivity {
 
                 if(data != null && data.getData() != null){
                     imageUri = data.getData();
+
+                    final int takeFlags = result.getData().getFlags()
+                            & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+                    try {
+                        getContentResolver().takePersistableUriPermission(imageUri, takeFlags);
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Permission failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     imageUri = cameraImageUri;
                 }
 
-                if(imageUri != null) showAddReportDialog(imageUri);
+                if(imageUri != null){
+                    showAddReportDialog(imageUri);
+                }
             }
         });
 
@@ -91,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
                     selectedFragment = new HomeFragment();
                 } else if(id == R.id.nav_add) {
                     openImageChooser();
+                } else {
+                    selectedFragment = new ReportsFragment();
                 }
 
                 if(selectedFragment!=null){
@@ -113,17 +126,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void storeData(Uri image, String title){
-        ReportDatabase database = Room.databaseBuilder(this, ReportDatabase.class, "my_reports").build();
+        ReportDatabase database = Room.databaseBuilder(this, ReportDatabase.class, "reports").build();
         ReportsDao dao = database.reportsDao();
 
         String date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
         Report report = new Report(title, image.toString(), date);
         new Thread(() -> {
             dao.insert(report);
+
+            runOnUiThread(() -> {
+                int reportNo = Integer.valueOf(tinyDb.getString("reportNo", "1")) + 1;
+                editor.putString("reportNo", String.valueOf(reportNo));
+                editor.apply();
+                Toast.makeText(this, "Report added", Toast.LENGTH_SHORT).show();
+
+                binding.bottomNav.setSelectedItemId(R.id.nav_reports);
+            });
         }).start();
-        int reportNo = Integer.valueOf(tinyDb.getString("reportNo", "1")) + 1;
-        editor.putString("reportNo", String.valueOf(reportNo));
-        Toast.makeText(this, "Report added", Toast.LENGTH_SHORT).show();
     }
 
     private void openImageChooser() {
@@ -135,7 +154,8 @@ public class MainActivity extends AppCompatActivity {
         }
         takePhoto.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri);
 
-        Intent selectPhoto = new Intent(Intent.ACTION_PICK);
+        Intent selectPhoto = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        selectPhoto.setType("images/*");
         selectPhoto.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
         Intent chooser = Intent.createChooser(selectPhoto, "Capture or Select an Image");
@@ -153,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
                 .setView(view)
                 .setPositiveButton("Add", (dialog, which) -> {
                     String reportTitle = reportTitleBox.getText().toString();
-                    if(reportTitle.isEmpty()) reportTitle = "com.faraz.meditrack.Report " + tinyDb.getString("reportNo", "1");
+                    if(reportTitle.isEmpty()) reportTitle = "Report " + tinyDb.getString("reportNo", "1");
 
                     storeData(imageUri, reportTitle);
                 })
@@ -162,11 +182,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onSaveInstanceState(@NonNull Bundle outState, @NonNull PersistableBundle outPersistentState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         if(cameraImageUri != null){
             outState.putString("cameraImageUri", cameraImageUri.toString());
         }
-        super.onSaveInstanceState(outState, outPersistentState);
+        super.onSaveInstanceState(outState);
     }
 
     @Override

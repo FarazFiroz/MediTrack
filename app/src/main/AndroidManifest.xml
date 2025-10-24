@@ -12,10 +12,13 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.MediTrack">
         <activity
+            android:name=".ViewReports"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
+            android:exported="true"
             android:theme="@style/Theme.MediTrack"
-            android:windowSoftInputMode="adjustPan"
-            android:exported="true">
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,11 +31,10 @@
             android:authorities="com.faraz.meditrack.provider"
             android:exported="false"
             android:grantUriPermissions="true">
-        <meta-data
-            android:name="android.support.FILE_PROVIDER_PATHS"
-            android:resource="@xml/file_paths" />
-    </provider>
-
-</application>
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
 
 </manifest>
