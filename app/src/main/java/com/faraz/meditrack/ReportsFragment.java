@@ -39,6 +39,7 @@ public class ReportsFragment extends Fragment {
                 requireActivity().runOnUiThread(() -> {
                     adapter = new ReportsAdapter(getContext(), reports);
                     binding.reportsRecylerView.setAdapter(adapter);
+                    if(reports.isEmpty()) binding.noReportsTxt.setVisibility(View.VISIBLE);
                 });
             }
         }).start();
